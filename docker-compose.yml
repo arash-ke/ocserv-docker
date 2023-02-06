@@ -1,0 +1,13 @@
+---
+version: '3.0'
+services:
+  ocserv:
+    image: arashke/ocserv:0.12.1-alpine
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+    ports:
+      - 443:443/udp
+      - 443/tcp
+    # volumes:
+    #   - "/opt/ocserv:/etc/ocserv"
