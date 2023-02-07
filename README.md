@@ -10,7 +10,7 @@ This is a dockerized version of [OpenConnect server (ocserv)](http://www.infrade
 
 ## Build
 
-The default version that is used for building ocserv is 0.12.1. If you want to cahnge the ocserv version you can pass it using `OC_VERSION` build argument.
+The default version that is used for building ocserv is 0.12.1. If you want to change the ocserv version you can pass it using `OC_VERSION` build argument.
 
 ```bash
 docker build --rm --tag ocserv:0.12.1-alpine .
