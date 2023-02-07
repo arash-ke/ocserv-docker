@@ -21,7 +21,7 @@ docker build --rm --tag ocserv:0.12.1-alpine .
 Running using docker CLI and image in docker hub:
 
 ```bash
-docker run -d --cap-add=CAP_NET_ADMIN -p 443:443 -p 443:443/udp --name ocserv arashke/ocserv:0.12.1-alpine
+docker run -d --cap-add=NET_ADMIN -p 443:443 -p 443:443/udp --name ocserv arashke/ocserv:0.12.1-alpine
 ```
 
 Sample docker-compose file:
@@ -50,11 +50,15 @@ The default user is ocserv.
 
 - `ENABLE_NAT` Add masquerade to nat table. The default is false.
 - `DEFAULT_DOMAIN` Update config to set this domain. The default is empty.
+- `KEY_BITS` Private key length. The default is 2048
 
 ### Config files
 
 - `/etc/ocserv/ocserv.conf` ocserv main configuration file.
 - `/etc/ocserv/iptables.v4.rules` iptables configration.
+- `/etc/ocserv/server.crt` Server certificate file. Will be automatic generated on first run if file not exists
+- `/etc/ocserv/server.pem` Server private file. Will be automatic generated on first run if file not exists
+- `/etc/ocserv/ca.crt` CA file. Will be automatic generated on first run if file not exists
 
 ## References
 

@@ -5,46 +5,62 @@ function assert() {
 }
 
 function ensure_certs {
-  [ -f /etc/ssl/certs/server.crt ] && [ -f /etc/ssl/private/server.pem ] && return 0
-  cd /etc/ssl
-  echo Generating self-signed CA
-  certtool --generate-privkey --bits=4096 --outfile /etc/ssl/private/ca.pem
-  cat > ca.tmpl <<-EOCA
-  cn = "ocserv CA"
-  organization = "unknown"
-  serial = 1
-  expiration_days = 999
-  ca
-  signing_key
-  cert_signing_key
-  crl_signing_key
+  local cert_path=/etc/ocserv
+  local bits=2048
+  [[ ! -z "$KEY_BITS" ]] && bits=$KEY_BITS
+  cd $cert_path
+  [ -f $cert_path/ca.pem ] && [ -f $cert_path/server.crt ] && [ -f $cert_path/server.pem ] && return 0
+  if ! [ -f $cert_path/ca.pem ]; then
+    echo Generating CA RSA key
+    certtool --generate-privkey --bits $bits --outfile $cert_path/ca.pem
+  fi
+  if ! [ -f $cert_path/ca.crt ]; then
+    echo Generating self-signed CA
+    cat > ca.tmpl <<-EOCA
+    cn = "ocserv CA"
+    organization = "unknown"
+    serial = 1
+    expiration_days = 9999
+    ca
+    signing_key
+    cert_signing_key
+    crl_signing_key
 EOCA
-  certtool --generate-self-signed --load-privkey /etc/ssl/private/ca.pem --template ca.tmpl --outfile /etc/ssl/certs/ca.crt
-  echo Generating self-signed server certificate
-  certtool --generate-privkey --bits=4096 --outfile /etc/ssl/private/server.pem
-  cat > server.tmpl <<-EOSRV
-  cn = "ocserv"
-  organization = "Unknown"
-  expiration_days = 999
-  signing_key
-  encryption_key
-  tls_www_server
+    certtool --generate-self-signed --load-privkey $cert_path/ca.pem --template ca.tmpl --outfile $cert_path/ca.crt
+    assert $? 0
+  fi
+  if ! [ -f $cert_path/server.pem ]; then
+    echo Generating server RSA key
+    certtool --generate-privkey --bits $bits --outfile $cert_path/server.pem
+    assert $? 0
+  fi
+  if ! [ -f $cert_path/server.crt ]; then
+    echo Generating self-signed server certificate
+    cat > server.tmpl <<-EOSRV
+    cn = "ocserv"
+    organization = "Unknown"
+    expiration_days = 999
+    signing_key
+    encryption_key
+    tls_www_server
 EOSRV
-  certtool --generate-certificate \
-    --load-privkey /etc/ssl/private/server.pem \
-    --load-ca-certificate /etc/ssl/certs/ca.crt \
-    --load-ca-privkey /etc/ssl/private/ca.pem \
-    --template server.tmpl \
-    --outfile /etc/ssl/certs/server.crt
-  assert $? 0
+    certtool --generate-certificate \
+      --load-privkey $cert_path/server.pem \
+      --load-ca-certificate $cert_path/ca.crt \
+      --load-ca-privkey $cert_path/ca.pem \
+      --template server.tmpl \
+      --outfile $cert_path/server.crt
+    assert $? 0
+  fi
   return 0
 }
 
 function gen_user {
-  [ -f "/etc/oc.passwd" ] && return 0
+  [ -f "/etc/ocserv/oc.passwd" ] && return 0
   echo "Generating default ocserv user"
-  PASSWORD=`tr -dc A-Za-z0-9 </dev/urandom | head -c 13`
-  echo $PASSWORD | ocpasswd -c /etc/oc.passwd ocserv
+  local PASSWORD=`tr -dc A-Za-z0-9 </dev/urandom | head -c 13`
+  local pass_hash=`echo $PASSWORD | openssl passwd -5 -in -`
+  echo "ocserv:*:$pass_hash" > /etc/ocserv/oc.passwd
   assert $? 0
   echo "RANDOM PASSWORD: $PASSWORD"
   return 0

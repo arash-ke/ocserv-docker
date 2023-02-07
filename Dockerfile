@@ -40,7 +40,8 @@ RUN apk add --no-cache \
     linux-pam \
     lz4-libs \
     musl \
-    nettle
+    nettle \
+    openssl
 COPY entrypoint.sh /entrypoint.sh
 COPY iptables.up.rules /etc/network/iptables.up.rules
 RUN mkdir -p /etc/ocserv \
