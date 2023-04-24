@@ -41,13 +41,14 @@ RUN apk add --no-cache \
     lz4-libs \
     musl \
     nettle \
-    openssl
+    openssl \
+    bash
 COPY entrypoint.sh /entrypoint.sh
 COPY iptables.up.rules /etc/network/iptables.up.rules
 RUN mkdir -p /etc/ocserv \
     && chmod +x /entrypoint.sh
 WORKDIR /etc/ocserv
-COPY ocserv.conf /etc/ocserv/ocserv.conf
+COPY ocserv.conf.tmpl /etc/ocserv/ocserv.conf.tmpl
 COPY --from=build /app /usr
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["/usr/sbin/ocserv", "-c", "/etc/ocserv/ocserv.conf", "-f"]

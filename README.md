@@ -10,7 +10,7 @@ This is a dockerized version of [OpenConnect server (ocserv)](http://www.infrade
 
 ## Build
 
-The default version that is used for building ocserv is 0.12.1. If you want to change the ocserv version you can pass it using `OC_VERSION` build argument.
+Default version that is used for building ocserv is 0.12.1. If you want to change the ocserv version you can pass it using `OC_VERSION` build argument.
 
 ```bash
 docker build --rm --tag ocserv:0.12.1-alpine .
@@ -36,21 +36,32 @@ services:
       - NET_ADMIN
     ports:
       - 443:443/udp
-      - 443/tcp
+      - 443:443/tcp
     # volumes:
     #   - "$PWD/config:/etc/ocserv"
 ```
 
 ### Default user
 
-The default config file uses a password file, and a random password will be generated on the first run and logged into the console.
-The default user is ocserv.
+Default config file uses a password file, and a random password will be generated on the first run and logged into the console.
+Default user is ocserv.
 
 ### Environment Variables
 
-- `ENABLE_NAT` Add masquerade to nat table. The default is false.
-- `DEFAULT_DOMAIN` Update config to set this domain. The default is empty.
-- `KEY_BITS` Private key length. The default is 2048
+- `ENABLE_NAT` Add masquerade to nat table. Default is false.
+- `KEY_BITS` Private key length. Default is 2048
+- `AUTO_CONFIG` Update config using template file and environment variables. Default is 1.
+- `TCP_PORT` TCP port to listen on. Default is 443.
+- `UDP_PORT` UDP port to listen on. Default is 443.
+- `SERVER_CERT` Server CERT to use. Default is /etc/ocserv/server.crt.
+- `SERVER_KEY` Server private key to use. Default is /etc/ocserv/server.pem.
+- `CA_CERT` Server CA to use. Default is /etc/ocserv/ca.crt.
+- `MAX_CLIENTS` Maximum clients to accept. Default is 128.
+- `MAX_SAME_CLIENTS` Maximum clients to accept. Default is 5.
+- `DEFAULT_DOMAIN` Update config to set this domain. Default is empty.
+- `IPV4_NETWORK` IPV4 network to use. Default is 10.0.0.1.
+- `ROUTE` Route to send to the clients. Default is default.
+- `NO_ROUTE` Route to exclude on the clients. Default is 192.168.0.0/23.
 
 ### Config files
 

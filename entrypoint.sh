@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 function assert() {
   [[ $1 -ne $2 ]] && echo "Program failed with exit code $1" && exit $rc
@@ -11,11 +11,11 @@ function ensure_certs {
   cd $cert_path
   [ -f $cert_path/ca.pem ] && [ -f $cert_path/server.crt ] && [ -f $cert_path/server.pem ] && return 0
   if ! [ -f $cert_path/ca.pem ]; then
-    echo Generating CA RSA key
+    echo "Generating CA RSA key > $cert_path/ca.pem"
     certtool --generate-privkey --bits $bits --outfile $cert_path/ca.pem
   fi
   if ! [ -f $cert_path/ca.crt ]; then
-    echo Generating self-signed CA
+    echo "Generating self-signed CA > $cert_path/ca.crt"
     cat > ca.tmpl <<-EOCA
     cn = "ocserv CA"
     organization = "unknown"
@@ -30,12 +30,12 @@ EOCA
     assert $? 0
   fi
   if ! [ -f $cert_path/server.pem ]; then
-    echo Generating server RSA key
+    echo "Generating server RSA key > $cert_path/server.pem"
     certtool --generate-privkey --bits $bits --outfile $cert_path/server.pem
     assert $? 0
   fi
   if ! [ -f $cert_path/server.crt ]; then
-    echo Generating self-signed server certificate
+    echo "Generating self-signed server certificate > $cert_path/server.crt"
     cat > server.tmpl <<-EOSRV
     cn = "ocserv"
     organization = "Unknown"
@@ -76,29 +76,36 @@ function config_iptables {
 
 function update_config {
   echo "Updating configuration"
-  [[ ! -z $DEFAULT_DOMAIN ]] && sed -iback -e "s/default-domain = .*/default-domain = $DEFAULT_DOMAIN/" /etc/ocserv/ocserv.conf
+  echo "=============================="
+  local oc_config=$(eval "echo \"$(</etc/ocserv/ocserv.conf.tmpl)\"")
+  echo "$oc_config" | tee /etc/ocserv/ocserv.conf
   return 0
 }
 
 function init {
   # Check certs
   ensure_certs; assert $? 0
-
+  echo "=============================="
   # Generate User
   gen_user; assert $? 0
+  echo "=============================="
 
   echo "Ensuring ipv4 ip forward"
   assert `sysctl -n net.ipv4.ip_forward` 1
+  echo "=============================="
 
   config_iptables; assert $? 0
+  echo "=============================="
 
   echo "Enable TUN device"
   mkdir -p /dev/net
   mknod /dev/net/tun c 10 200
   chmod 600 /dev/net/tun
+  echo "=============================="
 
   # Update config
-  update_config; assert $? 0
+  [[ ${AUTO_CONFIG:-1} -ne 0 ]] && update_config; assert $? 0
+  echo "=============================="
 
   return 0
 }
