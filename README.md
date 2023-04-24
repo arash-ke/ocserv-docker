@@ -60,6 +60,7 @@ Default user is ocserv.
 - `MAX_SAME_CLIENTS` Maximum clients to accept. Default is 5.
 - `DEFAULT_DOMAIN` Update config to set this domain. Default is empty.
 - `IPV4_NETWORK` IPV4 network to use. Default is 10.0.0.1.
+- `IPV4_NETMASK` IPV4 netmask to use. Default is 255.255.255.0.
 - `ROUTE` Route to send to the clients. Default is default.
 - `NO_ROUTE` Route to exclude on the clients. Default is 192.168.0.0/23.
 
